@@ -43,14 +43,6 @@ function Tokens()
     return null;
 }
 
-$tokens = Tokens();
-
-if ($tokens) {
-    foreach ($tokens as $element) {
-        echo $element . "<br>";
-    }
-}
-
 function generateTokens($id)
 {
     global $conn;
@@ -73,6 +65,18 @@ function generateTokens($id)
     return $s;
 }
 
+function generateAnonymousToken($seed, $n): string
+{
+    // User with right 5 are guest or anonymous
+    $seed = base64_encode($seed . rand(0, 1000));
+    $n = rand(0, 1000) * $n;
+    return hash("sha256", base64_encode($seed . time()) . (time() * $n));
+}
+/*
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     echo generateTokens($_GET['id']);
 }
+
+if (isset($_GET['seed']) && isset($_GET['n']) && !empty($_GET['seed']) && !empty($_GET['n'])) {
+    echo generateAnonymousToken($_GET['seed'], $_GET['n']);
+}*/

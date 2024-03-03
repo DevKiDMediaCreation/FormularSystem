@@ -11,50 +11,44 @@ $org = $stmt->fetch();
 
 #echo json_encode($_POST);
 
-if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['email'])) {
+if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['email']) && !empty($_POST['name'])) {
 
     $user = $_POST['username'];
     $pw = $_POST['password'];
     $email = $_POST['email'];
-
-    // Escape user input to prevent SQL injection
+    $name = $_POST['name'];
 
     $user = base64_encode($user);
     $pw = hash('sha256', base64_encode($pw));
 
-    $stmt = $dbpdo->prepare("SELECT * FROM users WHERE user = :user AND email = :email");
-    $stmt->bindParam(':user', $user);
+    // Use prepared statement to prevent SQL injection
+    $stmt = $dbpdo->prepare("SELECT * FROM users WHERE email = :email");
     $stmt->bindParam(':email', $email);
     $stmt->execute();
     $row = $stmt->fetch();
 
-    if ($row == null) {
-        $status = "Benutzer existiert nicht";
-        session_destroy();
-    } else {
-        if ($pw !== $row['pw']) {
-            $status = "Password übereinstimmt nicht dem den Passwort bei der Registrierung";
-            session_destroy();
-        } else {
-            // Store user session data
-            $_SESSION['user'] = $row['user'];
-            $_SESSION['name'] = $row['name'];
-            $_SESSION['pw'] = $row['pw'];
-            $_SESSION['id'] = $row['id'];
-            $_SESSION['email'] = $row['email'];
-            $_SESSION['rights'] = $row['rights'];
+    if (!$row) {
+        $stmt = $dbpdo->prepare("INSERT INTO users (user, pw, email, name, rights) VALUES (:user, :pw, :email, :name, 4)");
+        $stmt->bindParam(':user', $user);
+        $stmt->bindParam(':pw', $pw);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':name', $name);
+        $stmt->execute();
 
-            $status = "Login ist erfolgreich";
-        }
+        $status = "Registration ist erfolgreich";
+    } else {
+        $status = "Benutzer existiert bereits";
+        #header("Location: ./login.php");
     }
+
 }
 
 ?>
 
 <!DOCTYPE html>
-<html lang="de">
+<html>
 <head>
-    <title>Login - Administration Unit</title>
+    <title>Registration - Administration Unit</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -82,7 +76,7 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
 
             <?php
             if (!empty($status)) { ?>
-                <div class="<?php echo ($status == 'Login ist erfolgreich') ? 'bg-success' : 'bg-danger' ?> text-center border rounded p-2 my-2 text-white">
+                <div class="<?php echo ($status == 'Registration successfully') ? 'bg-success' : 'bg-danger' ?> text-center border rounded p-2 my-2 text-white">
                     <?php echo $status; ?>
                 </div>
                 <?php
@@ -90,12 +84,9 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
             ?>
 
 
-            <h4 class="mb-3">Login</h4>
-            <?php
-            if ($_SESSION) { ?>
-                <p>Ihre Machtgewalt als <?php echo $_SESSION['name']; ?>
-                    (Benutzername: <?php echo base64_decode($_SESSION['user']); ?>)
-                    ist <?php echo $_SESSION['rights']; ?></p>
+            <h4 class="mb-3">Registration</h4>
+            <?php if ($_SESSION) { ?>
+                <p>Ihre Machtgewalt als <?php echo $_SESSION['name'];?> (Benutzername: <?php echo base64_decode( $_SESSION['user']);?>) ist <?php echo $_SESSION['rights']; ?></p>
                 <a href="logout.php" class="btn border btn-primary w-100 btn-lg">Logout</a>
             <?php } else { ?>
                 <form class="needs-validation" novalidate="" method="post">
@@ -132,17 +123,38 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
                                 </div>
                             </div>
                         </div>
+
+
+                        <div class="col-12">
+                            <label for="username" class="form-label">Rechtlicher Name</label>
+                            <div class="input-group has-validation">
+                                <span class="input-group-text">/</span>
+                                <input type="text" class="form-control" id="name" placeholder="" required=""
+                                       value="<?php echo $_POST['name'] ?? null; ?>"
+                                       name="name">
+                                <div class="invalid-feedback">
+                                    Name ist erforderlich.
+                                </div>
+                            </div>
+                            <small class="text-body-secondary">
+                                (Vor- und Nachname. Wenn ein Title wie Dr. oder Prof. vorhanden ist, bitte
+                                eingeben)</small>
+                        </div>
+
+                        <div class="col-12">
+                            <p class="border bg-white p-2 text-center text-secondary rounded">Administration IT
+                                Machtgewalt Rechte: 4 (Standard)</p>
+                        </div>
                     </div>
 
                     <hr class="my-4">
 
                     <button class="btn w-100 btn btn-primary btn-lg" type="submit">Senden</button>
                 </form>
-                <?php
-            }
-            ?>
+            <?php } ?>
         </div>
     </main>
+
 
     <footer class="my-5 pt-5 text-body-secondary text-center text-small">
 
