@@ -35,7 +35,11 @@ if (!empty($_GET['id']) && !empty($_GET['token'])) {
         <a href='./utils/anonymtoken.php?formular={$id}' class='btn btn-warning border-black border my-2 w-100'>Erstellen</a>
         ";
         $disable = true;
+    } else if ($row[2]['used'] == 1) {
+        $status = "Token wurde bereits verwendet. Für einen Token bitte hier drücken. <a href='./utils/anonymtoken.php?formular={$id}' class='btn btn-warning border-black border my-2 w-100'>Erstellen</a>";
+        $disable = true;
     }
+
 
 
     $i = count($dbs);
@@ -55,7 +59,8 @@ if (!empty($_GET['id']) && !empty($_GET['token'])) {
         return $a['index'] <=> $b['index'];
     });
 } else {
-    header("Location: error.php?err=nonparam&meta=providing_requirements: id, token");
+    header("Location: index.php");
+    #header("Location: error.php?err=nonparam&meta=providing_requirements: id, token");
     exit;
 }
 ?>
@@ -135,11 +140,10 @@ if (!empty($_GET['id']) && !empty($_GET['token'])) {
 
 
 <?php
-
-/*for ($c; as $_POST[$item['id']]; $c < $_POST[$item['id']]; $c = $_POST[$item['id']) {
-    echo $c;
-}*/
-
+// Make the token used
+$sql = "UPDATE tokens SET `used` = 1 WHERE token = :token";
+$stmt = $dbpdo->prepare($sql);
+$stmt->execute([':token' => $token]);
 ?>
 
 

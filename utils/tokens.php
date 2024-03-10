@@ -2,9 +2,6 @@
 global $conn;
 include("../config/dbmysqli.php");
 
-session_start();
-
-
 function Tokens()
 {
     global $conn;

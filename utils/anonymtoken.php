@@ -5,7 +5,7 @@ include 'randomString.php';
 include 'tokens.php';
 
 
-function g()
+function created()
 {
     global $dbpdo;
     $token = generateAnonymousToken(
@@ -20,5 +20,5 @@ function g()
 }
 
 if (!empty($_GET['formular'])) {
-    header("Location: ../form.php?id={$_GET['formular']}&token=" . g());
+    header("Location: ../form.php?id={$_GET['formular']}&token=" . created());
 }

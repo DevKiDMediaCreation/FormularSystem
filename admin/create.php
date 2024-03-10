@@ -141,6 +141,7 @@ if ($_POST) {
                         </div>
                     </div>
 
+                    <!--Later general with DB fbs-->
                     <div class="col-md-5">
                         <label for="cls" class="form-label">Klassenstufe/Jahr/Semester</label>
                         <select class="form-select" id="cls" required="" name="cls">
@@ -148,6 +149,9 @@ if ($_POST) {
                             <?php for ($i = 1; $i <= 13; $i++) { // 20
                                 echo "<option value='{$i}'>$i</option>";
                             } ?>
+                            <option value='unterstufe'>Unterstufe (Kl. 5-6)</option>
+                            <option value='mittelstufe'>Mittelstufe (Kl. 7- 10)</option>
+                            <option value='oberstufe'>Oberstufe/Abitur (Kl. 11-12(13)) </option>
                         </select>
                         <div class="invalid-feedback">
                             Wählen sie eine Klassenstufe.
@@ -175,6 +179,7 @@ if ($_POST) {
                             <option value="fachhochschule">Fachhochschule</option>
                             <option value="berufsschule">Berufsschule</option>
                             <option value="abendschule">Abendschule</option>
+                            <option value="abitur">Abitur</option>
                             <option value="onlineschule">Online Schule</option>
                             <option value="andere">Andere</option>
                         </select>
