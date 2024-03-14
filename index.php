@@ -1,22 +1,21 @@
 <?php
 //error_reporting(0);
 include 'config/database.php';
+include 'config/fbs.php';
 include 'utils/anonymtoken.php';
 global $dbpdo;
 
 $token = created();
 
 // Get all forms
-$sql = "SELECT * FROM form";
-$stmt = $dbpdo->prepare($sql);
-$stmt->execute();
+$data = request("SELECT * FROM form");
 
 ?>
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Feedback System</title>
+    <title><?php echo requestSystem("SELECT * FROM information WHERE name = 'title'")->fetch(PDO::FETCH_ASSOC)['value']; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="assets/main.css">
@@ -26,7 +25,7 @@ $stmt->execute();
 <div class="header bg-black py-2">
     <div class="container" style="color: white;">
         <h1 class="me-2">Home</h1>
-        <small class="text-secondary me-1 break">Organisation: Otto-Hahn-Schule</small>
+        <small class="text-secondary me-1 break">Organisation: <?php echo requestSystem("SELECT * FROM information WHERE name = 'organization'")->fetch(PDO::FETCH_ASSOC)['value']; ?></small>
         <p class="text-secondary me-2 break">Token: <?php echo $token; ?></p>
     </div>
 </div>
@@ -35,7 +34,7 @@ $stmt->execute();
     <div class="container">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
             <?php
-            for ($i = 0; $row = $stmt->fetch(PDO::FETCH_ASSOC); $i++) {
+            for ($i = 0; $row = $data->fetch(PDO::FETCH_ASSOC); $i++) {
                 ?>
 
                 <div class="col p-1">
@@ -63,11 +62,9 @@ $stmt->execute();
                         </div>
                     </div>
                 </div>
-
             <?php } ?>
         </div>
     </div>
 </div>
 </body>
-
 

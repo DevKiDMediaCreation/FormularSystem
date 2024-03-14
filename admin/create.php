@@ -5,6 +5,8 @@ include "../utils/tokens.php";
 include "../utils/randomString.php";
 $status = "";
 
+session_start();
+
 $token = generateAnonymousToken(
     RandomString(rand(4, 40)), rand(3, 299));
 $expired = date("Y-m-d H:i:s", strtotime("+1 month"));

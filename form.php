@@ -12,10 +12,9 @@ if (!empty($_GET['id']) && !empty($_GET['token'])) {
     $parameter = [$id, $id, $token]; // Corrected parameter values
 
     for ($i = 0; $i < count($dbs); $i++) {
-        $sql = "SELECT * FROM " . $dbs[$i] . " WHERE `" . $column[$i] . "` = :id";
-        $stmt = $dbpdo->prepare($sql);
-        $stmt->execute([':id' => $parameter[$i]]);
+        $stmt = request("SELECT * FROM " . $dbs[$i] . " WHERE `" . $column[$i] . "` = :id", [':id' => $parameter[$i]]);
         $row[] = ($i == 0) ? $stmt->fetchAll(PDO::FETCH_ASSOC) : $stmt->fetch(PDO::FETCH_ASSOC);
+
         if (!$row[$i]) {
             $temp = json_encode($row[$i]);
             header("Location: error.php?err=dberrorselect&meta=Table: {$dbs[$i]} ID: {$_GET['id']} Table: {$dbs[$i]} Token: {$_GET['token']} non_checked");
@@ -23,31 +22,19 @@ if (!empty($_GET['id']) && !empty($_GET['token'])) {
         }
     }
 
-    /*if (empty($row[2]['token'])) {
-        echo "Token does not exist";
-        //setcookie("idf", $id, time() + (86400 * 30), "/");
-        //include_once("utils/anonymtoken.php");
-    }*/
-
     $disable = false;
     if ($row[2]['expired'] < date("Y-m-d H:i:s")) {
         $status = "Token ist abgelaufen seit: " . $row[2]['expired'] . ". Für einen Token bitte hier drücken.
         <a href='./utils/anonymtoken.php?formular={$id}' class='btn btn-warning border-black border my-2 w-100'>Erstellen</a>
         ";
         $disable = true;
-    } else if ($row[2]['used'] == 1) {
+    }/* else if ($row[2]['used'] == 1) {
         $status = "Token wurde bereits verwendet. Für einen Token bitte hier drücken. <a href='./utils/anonymtoken.php?formular={$id}' class='btn btn-warning border-black border my-2 w-100'>Erstellen</a>";
         $disable = true;
-    }
-
-
+    }*/
 
     $i = count($dbs);
-
-    $sql = "SELECT * FROM users WHERE `id` = :id";
-    $stmt = $dbpdo->prepare($sql);
-    $stmt->execute([':id' => $row[1]['creatorid']]);
-    $row[$i] = $stmt->fetch(PDO::FETCH_ASSOC);
+    $row[$i] = request("SELECT * FROM users WHERE `id` = :id", [':id' => $row[1]['creatorid']])->fetch(PDO::FETCH_ASSOC);
     if (!$row[$i]) {
         $temp = json_encode($row[$i]);
         header("Location: error.php?err=dberrorselect&meta=Table: users ID: {$_GET['id']} Table: users Token: {$_GET['token']} non_checked");
@@ -140,10 +127,7 @@ if (!empty($_GET['id']) && !empty($_GET['token'])) {
 
 
 <?php
-// Make the token used
-$sql = "UPDATE tokens SET `used` = 1 WHERE token = :token";
-$stmt = $dbpdo->prepare($sql);
-$stmt->execute([':token' => $token]);
+
 ?>
 
 

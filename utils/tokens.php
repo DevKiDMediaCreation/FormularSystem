@@ -1,6 +1,6 @@
 <?php
 global $conn;
-include("../config/dbmysqli.php");
+require_once(__DIR__ . '/../config/dbmysqli.php');
 
 function Tokens()
 {

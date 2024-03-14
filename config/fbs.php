@@ -1,13 +1,34 @@
 <?php
-define('DBFBS_US', 'admin');
-define('DBFBS_PW', 'admin');
-define('DBFBS_HOST', 'localhost');
-define('DBFBSN', 'fbs');
+$dbfbs_us = 'admin';
+$dbfbs_pw = 'admin';
+$dbfbs_host = 'localhost';
+$dbfbsn = 'fbs';
 
 try {
-    $fbsdpo = new PDO("mysql:host=" . DBFBS_HOST . ";dbname=" . DBFBSN, DBFBS_US, DBFBS_PW);
+    $fbsdpo = new PDO("mysql:host=" . $dbfbs_host . ";dbname=" . $dbfbsn, $dbfbs_us, $dbfbs_pw);
 } catch (PDOException $e) {
     print "Error!: " . $e->getMessage() . "<br/>";
     die();
 }
 
+if (!function_exists('getDatabaseInformation')) {
+    function getDatabaseInformation()
+    {
+        global $fbsdpo;
+        $sql = "SELECT * FROM information WHERE name = 'database_name'";
+        $stmt = $fbsdpo->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetch();
+    }
+}
+
+if (!function_exists('requestSystem')) {
+    function requestSystem($sql, $params = [])
+    {
+        global $fbsdpo;
+        $stmt = $fbsdpo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt;
+    }
+}

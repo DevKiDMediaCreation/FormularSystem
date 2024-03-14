@@ -1,6 +1,6 @@
 <?php
 global $dbpdo;
-include '../config/database.php';
+include __DIR__ . '/../config/database.php';
 include 'randomString.php';
 include 'tokens.php';
 
