@@ -32,3 +32,14 @@ if (!function_exists('requestSystem')) {
         return $stmt;
     }
 }
+
+if(!function_exists('getOrganization')) {
+    function getOrganization() {
+        return requestSystem("SELECT `value` FROM `information` WHERE `name` = 'organization'")->fetch()[0];
+    }
+}
+if(!function_exists('getVersion')) {
+    function getVersion() {
+        return requestSystem("SELECT `value` FROM `information` WHERE `name` = 'version'")->fetch()[0];
+    }
+}

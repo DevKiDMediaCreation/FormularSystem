@@ -3,12 +3,11 @@
 include 'config/database.php';
 include 'config/fbs.php';
 include 'utils/anonymtoken.php';
-global $dbpdo;
 
 $token = created();
 
 // Get all forms
-$data = request("SELECT * FROM form");
+$data = request("SELECT * FROM form WHERE visibility = 'public'");
 
 ?>
 <!DOCTYPE html>
@@ -25,15 +24,21 @@ $data = request("SELECT * FROM form");
 <div class="header bg-black py-2">
     <div class="container" style="color: white;">
         <h1 class="me-2">Home</h1>
-        <small class="text-secondary me-1 break">Organisation: <?php echo requestSystem("SELECT * FROM information WHERE name = 'organization'")->fetch(PDO::FETCH_ASSOC)['value']; ?></small>
+        <small class="text-secondary me-1 break">Organisation: <?php echo getOrganization(); ?></small>
         <p class="text-secondary me-2 break">Token: <?php echo $token; ?></p>
     </div>
 </div>
 
 <div class="album py-5 bg-body-tertiary">
     <div class="container">
+        <?php if ($data->rowCount() == 0) {
+            echo "<h2>Keine sichtbaren Formulare gefunden</h2>";
+        } ?>
+
+
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
             <?php
+
             for ($i = 0; $row = $data->fetch(PDO::FETCH_ASSOC); $i++) {
                 ?>
 

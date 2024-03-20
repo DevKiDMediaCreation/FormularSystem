@@ -32,10 +32,7 @@ if ($_POST) {
         $status = "Verfall ist nicht gültig";
     }
 
-    $sql = "SELECT * FROM users WHERE name = :name";
-    $stmt = $dbpdo->prepare($sql);
-    $stmt->execute([':name' => $nmdb]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $user = request("SELECT * FROM users WHERE name = :name", [':name' => $nmdb])->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
         $status = "Name ist nicht gültig";
@@ -44,10 +41,7 @@ if ($_POST) {
             $status = "Passwort ist nicht gültig";
         } else {
             // Check if the token is alread exist. If yes then regenerate the token.
-            $sql = "SELECT * FROM form WHERE formularid = :token";
-            $stmt = $dbpdo->prepare($sql);
-            $stmt->execute([':token' => $token]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $row = request("SELECT * FROM form WHERE formularid = :token", [':token' => $token])->fetch(PDO::FETCH_ASSOC);
             if ($row) {
                 $token = generateAnonymousToken(RandomString(rand(4, 40)), rand(3, 299));
             }
@@ -55,10 +49,9 @@ if ($_POST) {
             $meta = $cls . ";" . $scf . ";" . $ccb . ";" . $visibility;
             $now = date('Y-m-d H:i:s');
 
-            $sql = "INSERT INTO form (title, description,formularid, created, expired, meta, creatorid, subject) VALUES (:name, :description, :token, :now, :expired, :meta, :id, :thm)";
-            $stmt = $dbpdo->prepare($sql);
-            $stmt->execute([':name' => $name, ':description' => $description, ':token' => $token, ':expired' => $expired, ':meta' => $meta, ':now' => $now, 'id' => $user['id'], ':thm' => $thm]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $sql = "INSERT INTO form (title, description,formularid, created, expired, meta, creatorid, subject, visibility) VALUES (:name, :description, :token, :now, :expired, :meta, :id, :thm, :visibility)";
+            $params = [':name' => $name, ':description' => $description, ':token' => $token, ':expired' => $expired, ':meta' => $meta, ':now' => $now, 'id' => $user['id'], ':thm' => $thm, ':visibility' => $visibility];
+            $row = request($sql, $params)->fetch(PDO::FETCH_ASSOC);
 
             $files = ["dataprivacy", "license", "ano", "impressum"];
             $index = [0, 2, 3, 1];
@@ -68,8 +61,7 @@ if ($_POST) {
                 $sql = "INSERT INTO `formular` (`question`, `answertype`, `required`, `formularid`, `index`, `group`, `page`, `description`, `meta`, `write`)
                         VALUES (:name, 'read', b'1', :token, :index, 1, 0, NULL, :text, b'0')";
                 $stmt = $dbpdo->prepare($sql);
-                $text = file_get_contents("assets/" . $files[$i]);
-                $stmt->execute([':name' => $names[$i], ':token' => $token, ':text' => $text, ':index' => $index[$i]]);
+                $stmt->execute([':name' => $names[$i], ':token' => $token, ':text' => file_get_contents("assets/" . $files[$i]), ':index' => $index[$i]]);
                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
             }
 
@@ -91,6 +83,7 @@ if ($_POST) {
 </head>
 <body class="bg-body-tertiary poppins-light break">
 <div class="container">
+    <?php include("../template/backDashboardNav.php") ?>
     <main>
         <div class="py-5 text-center">
             <h2>Formular erstellen</h2>
@@ -103,7 +96,7 @@ if ($_POST) {
             <div class="bg-danger text-center border rounded p-2 my-2 text-white">
                 <?php echo $status; ?>
             </div>
-            <?php } ?>
+        <?php } ?>
 
 
         <div class="">
@@ -153,7 +146,7 @@ if ($_POST) {
                             } ?>
                             <option value='unterstufe'>Unterstufe (Kl. 5-6)</option>
                             <option value='mittelstufe'>Mittelstufe (Kl. 7- 10)</option>
-                            <option value='oberstufe'>Oberstufe/Abitur (Kl. 11-12(13)) </option>
+                            <option value='oberstufe'>Oberstufe/Abitur (Kl. 11-12(13))</option>
                         </select>
                         <div class="invalid-feedback">
                             Wählen sie eine Klassenstufe.
@@ -204,28 +197,18 @@ if ($_POST) {
 
                 <hr class="my-4">
 
-                <p class="border rounded p-2 bg-danger text-white">Beim nicht wählen, wird automatich das Formular
-                    für die ganze Organization sichtbar sein.</p>
-
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="visibility" id="class" value="class">
-                    <label class="form-check-label" for="class">
-                        Innerhalb nur der Klasse/Kurs
+                    <input class="form-check-input" type="radio" name="visibility" id="private" value="private" checked>
+                    <label class="form-check-label" for="private"> <!--Standard-->
+                        Nur mit Code sichtbar
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="visibility" id="stufe" value="stufe">
-                    <label class="form-check-label" for="stufe">
-                        Innerhalb nur der Stufe
+                    <input class="form-check-input" type="radio" name="visibility" id="public" value="public">
+                    <label class="form-check-label" for="public">
+                        Sichtbar
                     </label>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="visibility" id="org" checked value="org">
-                    <label class="form-check-label" for="org">
-                        Innerhalb der ganzen Organisation
-                    </label>
-                </div>
-
 
                 <hr class="my-4">
 
@@ -286,14 +269,7 @@ if ($_POST) {
         </div>
     </main>
 
-    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-        <p class="mb-1">© 2019–2024 by Duy Nam Schlitz</p>
-        <ul class="list-inline">
-            <li class="list-inline-item"><a href="#">Privacy</a></li>
-            <li class="list-inline-item"><a href="#">Terms</a></li>
-            <li class="list-inline-item"><a href="#">Support</a></li>
-        </ul>
-    </footer>
+    <?php include "../template/footer.php" ?>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

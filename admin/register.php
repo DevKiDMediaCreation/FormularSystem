@@ -5,11 +5,11 @@ session_start();
 global $fbsdpo;
 global $dbpdo;
 
-$stmt = $fbsdpo->prepare("SELECT `value` FROM `information` WHERE `name` = 'organization'");
-$stmt->execute();
-$org = $stmt->fetch();
+$org = requestSystem("SELECT `value` FROM `information` WHERE `name` = 'organization'")->fetch();
 
-#echo json_encode($_POST);
+if($_SESSION) {
+    header("Location: ./dashboard.php");
+}
 
 if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['email']) && !empty($_POST['name'])) {
 
@@ -22,10 +22,7 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
     $pw = hash('sha256', base64_encode($pw));
 
     // Use prepared statement to prevent SQL injection
-    $stmt = $dbpdo->prepare("SELECT * FROM users WHERE email = :email");
-    $stmt->bindParam(':email', $email);
-    $stmt->execute();
-    $row = $stmt->fetch();
+    $row = request("SELECT * FROM users WHERE email = :email", [':email' => $email])->fetch();
 
     if (!$row) {
         $stmt = $dbpdo->prepare("INSERT INTO users (user, pw, email, name, rights) VALUES (:user, :pw, :email, :name, 4)");
@@ -86,7 +83,9 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
 
             <h4 class="mb-3">Registration</h4>
             <?php if ($_SESSION) { ?>
-                <p>Ihre Machtgewalt als <?php echo $_SESSION['name'];?> (Benutzername: <?php echo base64_decode( $_SESSION['user']);?>) ist <?php echo $_SESSION['rights']; ?></p>
+                <p>Ihre Machtgewalt als <?php echo $_SESSION['name']; ?>
+                    (Benutzername: <?php echo base64_decode($_SESSION['user']); ?>)
+                    ist <?php echo $_SESSION['rights']; ?></p>
                 <a href="logout.php" class="btn border btn-primary w-100 btn-lg">Logout</a>
             <?php } else { ?>
                 <form class="needs-validation" novalidate="" method="post">
@@ -156,15 +155,8 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
     </main>
 
 
-    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
+    <?php include "../template/footer.php" ?>
 
-        <p class="mb-1">© 2019–2024 by Duy Nam Schlitz</p>
-        <ul class="list-inline">
-            <li class="list-inline-item"><a href="#">Privacy</a></li>
-            <li class="list-inline-item"><a href="#">Terms</a></li>
-            <li class="list-inline-item"><a href="#">Support</a></li>
-        </ul>
-    </footer>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

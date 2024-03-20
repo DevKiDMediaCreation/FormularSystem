@@ -2,14 +2,13 @@
 include("../config/database.php");
 include("../config/fbs.php");
 session_start();
-global $fbsdpo;
-global $dbpdo;
 
-$stmt = $fbsdpo->prepare("SELECT `value` FROM `information` WHERE `name` = 'organization'");
-$stmt->execute();
-$org = $stmt->fetch();
-
+$org = getOrganization();
 #echo json_encode($_POST);
+
+if($_SESSION) {
+    header("Location: ./dashboard.php");
+}
 
 if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['email'])) {
 
@@ -22,13 +21,9 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
     $user = base64_encode($user);
     $pw = hash('sha256', base64_encode($pw));
 
-    $stmt = $dbpdo->prepare("SELECT * FROM users WHERE user = :user AND email = :email");
-    $stmt->bindParam(':user', $user);
-    $stmt->bindParam(':email', $email);
-    $stmt->execute();
-    $row = $stmt->fetch();
+    $row = request("SELECT * FROM users WHERE user = :user AND email = :email", [':user' => $user, ':email' => $email])->fetch();
 
-    if ($row == null) {
+    if (empty($row)) {
         $status = "Benutzer existiert nicht";
         session_destroy();
     } else {
@@ -144,15 +139,8 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
         </div>
     </main>
 
-    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
+    <?php include "../template/footer.php" ?>
 
-        <p class="mb-1">© 2019–2024 by Duy Nam Schlitz</p>
-        <ul class="list-inline">
-            <li class="list-inline-item"><a href="#">Privacy</a></li>
-            <li class="list-inline-item"><a href="#">Terms</a></li>
-            <li class="list-inline-item"><a href="#">Support</a></li>
-        </ul>
-    </footer>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -161,5 +149,4 @@ if (!empty($_POST['username']) && !empty($_POST['password']) && !empty($_POST['e
 
 <script src="../assets/require.js"></script>
 </body>
-
 </html>

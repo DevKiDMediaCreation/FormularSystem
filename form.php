@@ -1,5 +1,4 @@
 <?php
-global $dbpdo;
 include('config/database.php');
 
 if (!empty($_GET['id']) && !empty($_GET['token'])) {

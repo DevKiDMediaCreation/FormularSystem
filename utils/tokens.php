@@ -1,5 +1,4 @@
 <?php
-global $conn;
 require_once(__DIR__ . '/../config/dbmysqli.php');
 
 function Tokens()
@@ -9,6 +8,7 @@ function Tokens()
     if (isset($_SESSION['user']) && isset($_SESSION['pw'])) {
         // Check first if the user exist and get the id
         $sql = "SELECT * FROM users WHERE user = '" . $_SESSION['user'] . "' AND pw = '" . $_SESSION['pw'] . "'";
+
         $result = $conn->query($sql);
 
         // Check if only one row is returned

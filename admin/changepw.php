@@ -1,7 +1,6 @@
 <?php
 include("../config/database.php");
 session_start();
-global $dbpdo;
 
 if (!$_SESSION) {
     header("Location: ./login.php");
@@ -25,11 +24,7 @@ if (!empty($_POST['newpw']) && !empty($_POST['newpw2']) && !empty($_POST['curpw'
         $status = "Neues Passwort stimmt nicht überein";
     } else {
         // Use prepared statement to prevent SQL injection
-        $stmt = $dbpdo->prepare("SELECT * FROM users WHERE user = :user AND email = :email");
-        $stmt->bindParam(':user', $_SESSION['user']);
-        $stmt->bindParam(':email', $_SESSION['email']);
-        $stmt->execute();
-        $row = $stmt->fetch();
+        $row = request("SELECT * FROM users WHERE user = :user AND email = :email", [':user' => $_SESSION['user'], ':email' => $_SESSION['email']])->fetch();
 
         if ($row == null) {
             $status = "Benutzer konnte nicht gefunden werden";
@@ -42,12 +37,7 @@ if (!empty($_POST['newpw']) && !empty($_POST['newpw2']) && !empty($_POST['curpw'
                     $status = "Password übereinstimmt nicht dem den Passwort bei der Registrierung";
                     session_destroy();
                 } else {
-                    $stmt = $dbpdo->prepare("UPDATE users SET pw = :newpw WHERE user = :user AND email = :email");
-                    $stmt->bindParam(':newpw', $newpw);
-                    $stmt->bindParam(':user', $_SESSION['user']);
-                    $stmt->bindParam(':email', $_SESSION['email']);
-                    $stmt->execute();
-
+                    request("UPDATE users SET pw = :newpw WHERE user = :user AND email = :email", [':newpw' => $newpw, ':user' => $_SESSION['user'], ':email' => $_SESSION['email']])->execute();
 
                     $_SESSION['pw'] = $row['pw'];
                     $status = "Änderung ist erfolgreich.";
@@ -146,15 +136,7 @@ if (!empty($_POST['newpw']) && !empty($_POST['newpw2']) && !empty($_POST['curpw'
         </div>
     </main>
 
-    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-
-        <p class="mb-1">© 2019–2024 by Duy Nam Schlitz</p>
-        <ul class="list-inline">
-            <li class="list-inline-item"><a href="#">Privacy</a></li>
-            <li class="list-inline-item"><a href="#">Terms</a></li>
-            <li class="list-inline-item"><a href="#">Support</a></li>
-        </ul>
-    </footer>
+    <?php include "../template/footer.php" ?>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
