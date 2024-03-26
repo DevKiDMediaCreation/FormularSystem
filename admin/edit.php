@@ -3,6 +3,23 @@ include "../config/database.php";
 include "../config/fbs.php";
 session_start();
 
+if (!$_SESSION) {
+    header("Location: ./login.php");
+}
+
+if(empty($_GET['id'])) {
+    header("Location: ./dashboard.php");
+}
+
+// Check if the person is the owner of the form and check simultaneously if the form exists
+$form = request("SELECT * FROM form WHERE creatorid = :id AND formularid = :formid", [":id" => $_SESSION["id"], ":formid" => $_GET['id']])->fetch(PDO::FETCH_ASSOC);
+
+if(empty($form)) {
+    header("Location: ./dashboard.php");
+}
+
+echo json_encode($form);
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -29,12 +46,11 @@ session_start();
             <p class="lead">Jeglicher Zugang ist nur den gewährleistet, die der Organisation
                 "<?php echo getOrganization(); ?>"
                 angehören und oder mitarbeiten. Der IT zugang ist nur den Administratoren vorbehalten. </p>
-            <small class="text-secondary">Nur Administratoren haben die Machtgewalt 0-2. Machtgewalt 5 sind für Gäste
-                und die Machtgewalt von 3 bis 4 ist den der Organisation angehörig.</small>
         </div>
 
         <div class="">
             <h4 class="mb-3">Configuration</h4>
+            <small class="text-secondary"><?php echo $_GET['id']; ?></small>
             <form class="needs-validation" novalidate="" method="post">
                 <div class="row g-3">
                     <div class="col-sm-6">

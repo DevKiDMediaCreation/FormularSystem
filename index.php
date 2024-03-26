@@ -45,7 +45,7 @@ $data = request("SELECT * FROM form WHERE visibility = 'public'");
                 <div class="col p-1">
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <h1 class="card-title"><?php echo $row['title']; ?></h1>
+                            <h2 class="card-title"><?php echo $row['title']; ?></h2>
                             <p class="card-subtitle mb-2 text-body-secondary"><?php echo $row['description']; ?></p>
                             <p>Thema: <?php echo $row['subject']; ?></p>
                             <small class="text-secondary">

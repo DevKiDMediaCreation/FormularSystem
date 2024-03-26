@@ -66,6 +66,7 @@ if ($_POST) {
             }
 
             $status = "Auftrag ist erfolgreich gesendet worden.";
+            header("Location: edit.php?id=$token");
 
         }
     }
@@ -88,8 +89,6 @@ if ($_POST) {
         <div class="py-5 text-center">
             <h2>Formular erstellen</h2>
             <p class="lead">Jedes Formular/Feedback entsteht hier. Noch nur ein Schritt bis zur Perfektion.</p>
-            <small class="text-secondary">Nur Administratoren haben die Machtgewalt 0-2. Machtgewalt 5 sind für Gäste
-                und die Machtgewalt von 3 bis 4 ist den der Organisation angehörig.</small>
         </div>
         <?php
         if (!empty($status)) { ?>
